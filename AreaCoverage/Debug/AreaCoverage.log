@@ -1,0 +1,10 @@
+﻿  main.cpp
+e:\c++\areacoverage\areacoverage\main.cpp(62): warning C4838: conversion from 'double' to 'float' requires a narrowing conversion
+e:\c++\areacoverage\areacoverage\main.cpp(62): warning C4305: 'initializing': truncation from 'double' to 'float'
+e:\c++\areacoverage\areacoverage\main.cpp(99): warning C4018: '<': signed/unsigned mismatch
+e:\c++\areacoverage\areacoverage\main.cpp(249): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+e:\c++\areacoverage\areacoverage\main.cpp(313): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+e:\c++\areacoverage\areacoverage\main.cpp(313): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+e:\c++\areacoverage\areacoverage\main.cpp(409): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  AreaCoverage.vcxproj -> E:\C++\AreaCoverage\Debug\AreaCoverage.exe
+  AreaCoverage.vcxproj -> E:\C++\AreaCoverage\Debug\AreaCoverage.pdb (Partial PDB)

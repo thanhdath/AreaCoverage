@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html style="min-height: 100%; height: 100%;">
+  <head>
+      <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+      #box {
+        margin-top: 1%;
+        margin-left: 10%;
+        height: 90%;
+        border: 1px solid;
+        position: relative;
+        display: block;
+      }
+      .sensor{
+        position: absolute;
+        border: 1px solid #ccc;
+        border-radius: 100%;
+      }
+      #individual {
+        position: absolute;
+        right: 30px;
+        top: 20px;
+        width: 200px;
+
+      }
+      #info {
+          display: block;
+          position: fixed;
+          top: 50px;
+          right: 300px;
+      }
+    </style>
+  </head>
+  <body style="height: 100%">
+    <input type="file" name="file" id="file">
+    <div id="box"></div>
+    <div id="info">
+
+    </div>
+    <table>
+      <tbody id="individual">
+      </tbody>
+    </table>
+    <script>
+      var colors = ['rgba(255, 21, 21, 0.9)', 'rgba(21, 61, 255, 0.9)', 'rgba(70, 255, 21, 0.9)'];
+
+      var width, height, total_sensors, sensor_types;
+      var number_sensors = [];
+      var radius_sensors = [];
+      var alpha, SIZE;
+      var population = [];
+
+      var box_width;
+
+      var lines;
+
+      var current_index = 1;
+      // population = [[{x: , y: }, ...], [], []]
+
+      document.getElementById('file').onchange = function(){
+        var file = this.files[0];
+
+        var reader = new FileReader();
+        reader.onload = function(progressEvent){
+          // Entire file this.result
+          // By lines
+          lines = this.result.split('\n');
+          width = parseInt(lines[0]);
+          height = parseInt(lines[1]);
+          total_sensors = parseInt(lines[2]);
+          sensor_types = parseInt(lines[3]);
+
+          var string_num_sensor_types = lines[4].trim().split(" ");
+          var string_radius_sensors = lines[5].trim().split(" ");
+          for(var i = 0; i < string_num_sensor_types.length; i++) {
+            number_sensors.push(parseInt(string_num_sensor_types[i]));
+            radius_sensors.push(parseFloat(string_radius_sensors[i]));
+          }
+
+          alpha = parseFloat(lines[6]);
+          SIZE = parseInt(lines[7]);
+
+          for(var i = 0; i < SIZE; i++){
+            var str_sensors = lines[8 + 2*i].trim().split(' ');
+            var sensors = [];
+            for(var j = 0; j < total_sensors; j++) {
+              sensors.push({
+                x: parseFloat(str_sensors[j].split(',')[0]),
+                y: parseFloat(str_sensors[j].split(',')[1]),
+                r: parseFloat(str_sensors[j].split(',')[2])
+              })
+            }
+            var individual = {
+              sensors: sensors,
+              fitness: parseFloat(lines[9+2*i].trim().split(' ')[1])
+            }
+            population.push(individual);
+          }
+
+          loadIndividual();
+          //displaySensors(0);
+        };
+        reader.readAsText(file);
+      };
+
+      function displaySensors(index) {
+        // box_width = $('#box').width();
+        // box_height = (height*box_width / width);
+        // $('#box').css('height', box_height + 'px');
+        box_height = $('#box').height();
+        box_width = width*box_height / height;
+        $('#box').css('width', box_width + 'px');
+        $('#box').html('');
+
+        var sensors = population[index].sensors;
+        for(var i = 0; i < total_sensors; i++) {
+          $('#box').append(
+            '<div class="sensor" id="sensor_' + (i+1) + '"' +
+            ' data-x="' + sensors[i].x + '"' +
+            ' data-y="' + sensors[i].y + '"' +
+            ' data-r="' + sensors[i].r + '"' +
+            ' data-index="' + i + '"' +
+            '></div>'
+          );
+          $('#sensor_' + (i+1)).css('left', (convertUnit(sensors[i].x - sensors[i].r) + 'px'));
+          $('#sensor_' + (i+1)).css('bottom', convertUnit(sensors[i].y - sensors[i].r) + 'px');
+
+          $('#sensor_' + (i+1)).css('width', convertUnit(sensors[i].r * 2) + 'px');
+          $('#sensor_' + (i+1)).css('height', convertUnit(sensors[i].r * 2) + 'px');
+
+          for(var j = 0; j < sensor_types; j++) {
+            if(sensors[i].r == radius_sensors[j]) {
+              $('#sensor_' + (i+1)).css('background-color', colors[j]);
+              break;
+            }
+          }
+        }
+        $('#info').html(
+          '<p>fitness: ' + population[index].fitness + '</p>' +
+          '<p>olap: ' + 1 / population[index].fitness + '</p>'
+        );
+        addActive(current_index);
+      }
+
+      function convertUnit(t) {
+        return t*box_width / width;
+      }
+
+      function addActive(index) {
+        for(var j = 0; j < SIZE + 1; j++) {
+          $('div#individual_' + j).removeClass('active');
+        }
+        $('div#individual_'+(index)).addClass('active');
+      }
+
+      function loadIndividual() {
+        $('#file').hide();
+        for(var i = 0; i < SIZE; i++){
+          if(i%2==0) {
+            $('#individual').append(
+            '<tr id="row_' + (i/2) + '" ' +
+            '></tr>')
+          }
+          $('#individual > tr#row_' + parseInt(i/2)).append(
+            '<td><div class="individual btn btn-default" id="individual_' + i +
+            '" data-id="' + i  + '">' +
+            'individual ' + i  +
+            '</div></td>'
+          );
+
+          $('div#individual_' + i).click(function() {
+            current_index = $(this).data('id');
+            displaySensors(parseInt($(this).data('id')));
+          });
+        }
+        current_index = 0;
+        $('div#individual_' + current_index).trigger('click');
+      }
+
+      $(window).keypress(function(e) {
+        if(e.which == 100) { // d
+          if(current_index == population.length - 1 ) current_index = 0;
+          else current_index++;
+          displaySensors(current_index);
+        }
+        else if(e.which == 101) {
+          if(current_index == 0) current_index = population.length - 1;
+          else current_index--;
+          displaySensors(current_index);
+        }
+      });
+    </script>
+  </body>
+</html>
