@@ -110,7 +110,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="hungarian.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="munkres.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="hungarian.h" />
+    <ClInclude Include="munkres.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
