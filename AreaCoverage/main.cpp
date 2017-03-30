@@ -1,10 +1,14 @@
 #include <conio.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <vector>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+
+#include "hungarian.h"
+#include "munkres.h"
 
 using namespace std;
 
@@ -68,29 +72,31 @@ float HEIGHT = 100.0f;
 
 // s5-07
 
-const int total_sensors = 101;
-int sensor_types = 3;
-int number_sensors[] = { 22, 32, 47 };
-float radius_sensors[] = { 6.00, 4.80, 3.84 };
-float max_radius = 6.00;
-float alpha = 0.70f;
-float WIDTH = 100.0f;
-float HEIGHT = 100.0f;
-
-
-// s5-09
-//const int total_sensors = 130;
+//const int total_sensors = 101;
 //int sensor_types = 3;
-//int number_sensors[] = { 28, 41, 61 };
+//int number_sensors[] = { 22, 32, 47 };
 //float radius_sensors[] = { 6.00, 4.80, 3.84 };
 //float max_radius = 6.00;
-//float alpha = 0.90f;
+//float alpha = 0.70f;
 //float WIDTH = 100.0f;
 //float HEIGHT = 100.0f;
 
 
+// s5-09
+const int total_sensors = 130;
+int sensor_types = 3;
+int number_sensors[] = { 28, 41, 61 };
+float radius_sensors[] = { 6.00, 4.80, 3.84 };
+float max_radius = 6.00;
+float alpha = 0.90f;
+float WIDTH = 100.0f;
+float HEIGHT = 100.0f;
+
+
 const int SIZE = 50;
 individual *population[SIZE * 2];
+
+Munkres *munkres;
 
 void printPopulation() {
 	ofstream file("result.txt", ios::trunc);
@@ -244,7 +250,7 @@ void VFA(individual *idvd) {
 				na++;
 			}
 		}
-		if (nr != 0 && na != 0) {
+		/*if (nr != 0 && na != 0) {
 			idvd->sensors[i].x += 0.9 * frx / nr + 0.1 * fax / na;
 			idvd->sensors[i].y += 0.9 * fry / nr + 0.1 * fay / na;
 		}
@@ -253,6 +259,10 @@ void VFA(individual *idvd) {
 			idvd->sensors[i].y += 0.4 * fay / na;
 		}
 		else if (na == 0) {
+			idvd->sensors[i].x += frx / nr;
+			idvd->sensors[i].y += fry / nr;
+		}*/
+		if (nr != 0) {
 			idvd->sensors[i].x += frx / nr;
 			idvd->sensors[i].y += fry / nr;
 		}
@@ -377,42 +387,57 @@ individual* heuristicInitialization() {
 
 void initializePopulation() {
 	for (int i = 0; i < 2 * SIZE; i++) {
-		population[i] = randomInitialization();
-		//population[i] = heuristicInitialization();
+		//population[i] = randomInitialization();
+		population[i] = heuristicInitialization();
 		population[i]->fitness = fitness_fn(population[i]);
 	}
 	quickSortFitness(population, 0, 2 * SIZE - 1);
 }
 
-bool samePhenotypic(individual *id1, individual *id2) {
+bool reduceDistance(individual *id_1, individual *id_2) {
 	int start_index = 0;
+	int total_cost = 0;
+	// http://jsfiddle.net/jjcosare/6Lpz5gt9/2/
 	for (int type = 0; type < sensor_types; type++) {
-		bool *rowsHasZero = (bool *)malloc(sizeof(bool) * number_sensors[type]);
-		bool *colsHasZero = (bool *)malloc(sizeof(bool) * number_sensors[type]);
-		// init rowsHasZero, colsHasZero
-		for (int i = 0; i < number_sensors[type]; i++) {
-			rowsHasZero[i] = false;
-			colsHasZero[i] = false;
-		}
-		// calculate distance
-		for (int i = start_index; i < number_sensors[type] + start_index; i++) {
-			for (int j = start_index; j < number_sensors[type] + start_index; j++) {
-				int dt = (int) round(distance(id1->sensors[i], id2->sensors[j]) * 1000);
-				if (dt == 0) {
-					rowsHasZero[j - start_index] = true;
-					colsHasZero[i - start_index] = true;
-				}
+		int size = number_sensors[type];
+		vector<vector<int>> costs;
+
+		// calculate distance matrix
+		for (int i = 0; i < size; i++) {
+			vector<int> temp;
+			costs.push_back(temp);
+			for (int j = 0; j < size; j++) {
+				costs[i].push_back(
+					(int)(distance(id_1->sensors[i + start_index], id_2->sensors[j + start_index])*100)
+				);
 			}
 		}
 
-		// check row cols
-		for (int i = 0; i < number_sensors[type]; i++) {
-			if (!rowsHasZero[i] || !colsHasZero[i]) {
-				return false;
+		//hungarian = new Hungarian(&costs, size, max(WIDTH, HEIGHT));
+		delete munkres;
+		munkres = new Munkres(&costs, size, max(WIDTH, HEIGHT));
+		munkres->Run();
+
+		vector<vector<int>> *Mask = munkres->getMask();
+		
+		for (int i = 0; i < size; i++) {
+			int index_swap = -1;
+			for (int j = 0; j < size; j++) {
+				if ((*Mask)[i][j] == 1) {
+					index_swap = j;
+					total_cost += costs[i][j];
+					break;
+				}
 			}
+			sensor tmp = id_1->sensors[i];
+			id_1->sensors[i] = id_1->sensors[index_swap];
+			id_1->sensors[index_swap] = tmp;
 		}
-		start_index = number_sensors[type];
+
+		start_index += size;
 	}
+	if (total_cost == 0)
+		return false;
 	return true;
 }
 
@@ -437,13 +462,19 @@ individual* crossOver(individual *id_1, individual *id_2) {
 	return id_new;
 }
 
-void mutation(individual *idvd) {
+void mutation(individual *idvd, individual *father, individual *mother) {
 	for (int i = 0; i < total_sensors;i++) {
 		int r = (int)(rand() % (total_sensors));
 		if (r == 1) {
-			float x = RandomFloat(idvd->sensors[i].radius, WIDTH - idvd->sensors[i].radius);
-			float y = RandomFloat(idvd->sensors[i].radius, HEIGHT - idvd->sensors[i].radius);
-			idvd->sensors[i] = { x, y, idvd->sensors[i].radius };
+			float variance = father->sensors[i].x - mother->sensors[i].x;
+			if (variance > 0) {
+				float x = idvd->sensors[i].x;
+				float y = idvd->sensors[i].y;
+				float inc_x = 1 / (variance*sqrt(2 * M_PI)) * exp((-x*x) / (2 * variance*variance));
+				float inc_y = 1 / (variance*sqrt(2 * M_PI)) * exp((-y*y) / (2 * variance*variance));
+				idvd->sensors[i].x += inc_x;
+				idvd->sensors[i].y += inc_y;
+			}
 		}
 	}
 	VFA(idvd);
@@ -454,24 +485,35 @@ int main() {
 	rand();
 
 	initializePopulation();
-	
-	for (int i = 0; i < 10000; i++) {
+	//for (int i = 1; i < SIZE; i+=2) {
+	//	
+	//	for (int j = 0; j < total_sensors; j++) {
+	//		population[i]->sensors[j].x = population[i - 1]->sensors[j].x;
+	//		population[i]->sensors[j].y = population[i - 1]->sensors[j].y;
+	//	}
+	//	VFA(population[i]);
+	//}
+
+	for (int i = 0; i < 1000; i++) {
 		for (int j = SIZE; j < 2 * SIZE; j++) {
+			delete population[j];
+
 			int father = (int)(rand() % SIZE);
 			int mother = (int)(rand() % SIZE);
-			
+			while(father == mother) mother = (int)(rand() % SIZE);
+
 			int index = SIZE;
-			while (samePhenotypic(population[father], population[mother])) {
+			if (!reduceDistance(population[father], population[mother])) {
 				population[j] = population[mother];
 				population[mother] = population[index++];
 				if (index == 2 * SIZE) break;
-			} 
+			}
 
 			individual *new_individual = crossOver(population[father], population[mother]);
 
 			int r = (int)(rand() % 100);
 			if (r >= 0 && r <= 5)
-				mutation(new_individual);
+				mutation(new_individual, population[father], population[mother]);
 			new_individual->fitness = fitness_fn(new_individual);
 			population[j] = new_individual;
 		}
