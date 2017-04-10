@@ -1,17 +1,17 @@
 ﻿  main.cpp
-main.cpp(91): warning C4838: conversion from 'double' to 'float' requires a narrowing conversion
-main.cpp(91): warning C4305: 'initializing': truncation from 'double' to 'float'
-main.cpp(132): warning C4018: '<': signed/unsigned mismatch
-main.cpp(290): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-main.cpp(358): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-main.cpp(421): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-main.cpp(476): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-main.cpp(477): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-main.cpp(487): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+main.cpp(42): warning C4838: conversion from 'double' to 'float' requires a narrowing conversion
+main.cpp(42): warning C4305: 'initializing': truncation from 'double' to 'float'
+main.cpp(129): warning C4018: '<': signed/unsigned mismatch
+main.cpp(287): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+main.cpp(355): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+main.cpp(418): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+main.cpp(473): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+main.cpp(474): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+main.cpp(484): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   Generating code
-  1 of 431 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+  49 of 220 functions (22.3%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    6 functions had inline decision re-evaluated but remain unchanged
+    9 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   AreaCoverage.vcxproj -> E:\C++\AreaCoverage\Release\AreaCoverage.exe
   AreaCoverage.vcxproj -> E:\C++\AreaCoverage\Release\AreaCoverage.pdb (Full PDB)

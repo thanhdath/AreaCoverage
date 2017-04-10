@@ -36,39 +36,39 @@ void standardlizeSensors(individual *idvd);
 
 
 // s1-07
-//const int total_sensors = 17;
+const int total_sensors = 17;
+int sensor_types = 3;
+int number_sensors[] = {5, 5, 7};
+float radius_sensors[] = {14.00, 11.20, 8.96};
+float max_radius = 14.00f;
+float alpha = 0.68f;
+float WIDTH = 100.0f;
+float HEIGHT = 100.0f;
+
+
+// s2-07
+//
+//const int total_sensors = 24;
 //int sensor_types = 3;
-//int number_sensors[] = {5, 5, 7};
-//float radius_sensors[] = {14.00, 11.20, 8.96};
-//float max_radius = 14.00f;
-//float alpha = 0.68f;
+//int number_sensors[] = { 6, 8, 10 };
+//float radius_sensors[] = { 12.00, 9.60, 7.68 };
+//float max_radius = 12.00f;
+//float alpha = 0.69f;
 //float WIDTH = 100.0f;
 //float HEIGHT = 100.0f;
 
 
-// s2-07
-/*
-const int total_sensors = 24;
-int sensor_types = 3;
-int number_sensors[] = { 6, 8, 10 };
-float radius_sensors[] = { 12.00, 9.60, 7.68 };
-float max_radius = 12.00f;
-float alpha = 0.69f;
-float WIDTH = 100.0f;
-float HEIGHT = 100.0f;
-*/
-
 // s4-07
-/*
-const int total_sensors = 57;
-int sensor_types = 3;
-int number_sensors[] = { 12, 18, 27 };
-float radius_sensors[] = { 8.00, 6.40, 5.12 };
-float max_radius = 8.00f;
-float alpha = 0.70f;
-float WIDTH = 100.0f;
-float HEIGHT = 100.0f;
-*/
+
+//const int total_sensors = 57;
+//int sensor_types = 3;
+//int number_sensors[] = { 12, 18, 27 };
+//float radius_sensors[] = { 8.00, 6.40, 5.12 };
+//float max_radius = 8.00f;
+//float alpha = 0.70f;
+//float WIDTH = 100.0f;
+//float HEIGHT = 100.0f;
+
 
 // s5-07
 
@@ -83,17 +83,17 @@ float HEIGHT = 100.0f;
 
 
 // s5-09
-const int total_sensors = 130;
-int sensor_types = 3;
-int number_sensors[] = { 28, 41, 61 };
-float radius_sensors[] = { 6.00, 4.80, 3.84 };
-float max_radius = 6.00;
-float alpha = 0.90f;
-float WIDTH = 100.0f;
-float HEIGHT = 100.0f;
+//const int total_sensors = 130;
+//int sensor_types = 3;
+//int number_sensors[] = { 28, 41, 61 };
+//float radius_sensors[] = { 6.00, 4.80, 3.84 };
+//float max_radius = 6.00;
+//float alpha = 0.90f;
+//float WIDTH = 100.0f;
+//float HEIGHT = 100.0f;
 
 
-const int SIZE = 50;
+const int SIZE = 25;
 individual *population[SIZE * 2];
 
 Munkres *munkres;
@@ -387,8 +387,8 @@ individual* heuristicInitialization() {
 
 void initializePopulation() {
 	for (int i = 0; i < 2 * SIZE; i++) {
-		//population[i] = randomInitialization();
-		population[i] = heuristicInitialization();
+		population[i] = randomInitialization();
+		//population[i] = heuristicInitialization();
 		population[i]->fitness = fitness_fn(population[i]);
 	}
 	quickSortFitness(population, 0, 2 * SIZE - 1);
@@ -502,12 +502,12 @@ int main() {
 			int mother = (int)(rand() % SIZE);
 			while(father == mother) mother = (int)(rand() % SIZE);
 
-			int index = SIZE;
+			/*int index = SIZE;
 			if (!reduceDistance(population[father], population[mother])) {
 				population[j] = population[mother];
 				population[mother] = population[index++];
 				if (index == 2 * SIZE) break;
-			}
+			}*/
 
 			individual *new_individual = crossOver(population[father], population[mother]);
 
